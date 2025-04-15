@@ -1,0 +1,487 @@
+﻿<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quiz Retro ML</title>
+    <link rel="stylesheet" href="https://unpkg.com/snes.css@1.0.1/dist/snes.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+    <style>
+        body {
+            background: #1a1a1a;
+            color: #fefcd0;
+            font-family: 'Press Start 2P', cursive;
+            padding: 0;
+            margin: 0;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .quiz-container {
+            width: 90%;
+            max-width: 800px;
+            margin: 0 auto;
+            border: 4px solid #c381b5;
+            padding: 30px;
+            border-radius: 8px;
+            background: #2b2b2b;
+            box-shadow: 0 0 20px rgba(195, 129, 181, 0.5);
+        }
+
+        .pixel-text {
+            text-shadow: 2px 2px #c381b5;
+        }
+
+        .progress-counter {
+            text-align: center;
+            margin-bottom: 15px;
+            font-size: 0.8em;
+            color: #c381b5;
+            background: rgba(74, 74, 74, 0.5);
+            padding: 8px;
+            border-radius: 5px;
+            border: 1px solid #fefcd0;
+            display: inline-block;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .question {
+            margin-bottom: 25px;
+            line-height: 1.6;
+        }
+
+        .options {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        button {
+            background: #4a4a4a !important;
+            border: 2px solid #fefcd0 !important;
+            margin: 8px 0;
+            padding: 12px 20px;
+            width: 100%;
+            max-width: 500px;
+            transition: all 0.3s;
+            font-size: 0.9em;
+        }
+
+        button:hover {
+            transform: scale(1.03);
+            background: #c381b5 !important;
+        }
+
+        .correct, .wrong {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 5px;
+            text-align: center;
+            animation: flash 1s;
+        }
+
+        .correct {
+            background-color: rgba(0, 128, 0, 0.2);
+            border: 2px solid #00ff00;
+        }
+
+        .wrong {
+            background-color: rgba(128, 0, 0, 0.2);
+            border: 2px solid #ff0000;
+        }
+
+        #score {
+            display: none;
+            text-align: center;
+            padding: 20px;
+        }
+
+        .final-score-display {
+            font-size: 2.5em;
+            margin: 30px 0;
+            color: #c381b5;
+            animation: pixelate 0.5s infinite;
+        }
+
+        #final-score {
+            background: #4a4a4a;
+            padding: 15px 30px;
+            border-radius: 10px;
+            border: 3px solid #fefcd0;
+            display: inline-block;
+        }
+
+        .share-button, .restart-button {
+            margin: 15px !important;
+            padding: 15px 25px !important;
+            font-size: 1em !important;
+            max-width: 300px !important;
+        }
+
+        .share-button {
+            background: #c381b5 !important;
+        }
+
+        .restart-button {
+            background: #4a90e2 !important;
+        }
+
+        @keyframes pixelate {
+            0% { transform: translate(0,0); }
+            50% { transform: translate(2px,2px); }
+        }
+
+        @keyframes flash {
+            0% { opacity: 0; }
+            50% { opacity: 1; }
+            75% { opacity: 0.8; }
+            100% { opacity: 1; }
+        }
+
+        /* Media queries for responsiveness */
+        @media (max-width: 768px) {
+            .quiz-container {
+                width: 95%;
+                padding: 20px;
+            }
+
+            h1 {
+                font-size: 1.5em;
+            }
+
+            .question {
+                font-size: 0.9em;
+            }
+
+            button {
+                padding: 10px;
+                font-size: 0.8em;
+            }
+
+            .final-score-display {
+                font-size: 2em;
+                margin: 20px 0;
+            }
+
+            #final-score {
+                padding: 12px 25px;
+            }
+
+            .share-button, .restart-button {
+                padding: 12px 20px !important;
+                font-size: 0.9em !important;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .quiz-container {
+                width: 100%;
+                padding: 15px;
+                border-width: 3px;
+            }
+
+            h1 {
+                font-size: 1.2em;
+            }
+
+            .question {
+                font-size: 0.8em;
+                margin-bottom: 15px;
+            }
+
+            button {
+                padding: 8px;
+                margin: 5px 0;
+                font-size: 0.7em;
+            }
+
+            .final-score-display {
+                font-size: 1.5em;
+                margin: 15px 0;
+            }
+
+            #final-score {
+                padding: 10px 20px;
+                border-width: 2px;
+            }
+
+            .share-button, .restart-button {
+                margin: 10px !important;
+                padding: 10px 15px !important;
+                font-size: 0.8em !important;
+                max-width: 250px !important;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="quiz-container">
+        <h1 class="pixel-text">QUIZ MACHINE LEARNING</h1>
+        <div id="quiz"></div>
+        <div id="score">
+            <h2 class="pixel-text">PONTUAÇÃO FINAL</h2>
+            <div class="final-score-display">
+                <span id="final-score" class="pixel-text">0</span>
+            </div>
+            <p>Obrigado por jogar!</p>
+            <button onclick="shareScore()" class="share-button">COMPARTILHAR</button>
+            <button onclick="location.reload()" class="restart-button">JOGAR NOVAMENTE</button>
+        </div>
+    </div>
+
+<script>
+const allQuestions = [
+    {
+        question: "Qual algoritmo NÃO é adequado para problemas de regressão?",
+        options: ["KNN", "Árvore de Decisão", "SVM Linear", "K-Means", "Random Forest"],
+        correct: 3,
+        explanation: "K-Means é algoritmo de agrupamento (clustering)"
+    },
+    {
+        question: "Em Validação Cruzada k-fold, qual afirmação é correta?",
+        options: [
+            "k=5 significa 20% para teste em cada fold",
+            "Não ajuda a prevenir overfitting",
+            "k maior que 10 é sempre melhor",
+            "Deve-se usar o mesmo fold para todos os modelos"
+        ],
+        correct: 0,
+        explanation: "k=5 divide os dados em 5 partes com 20% para teste cada"
+    },
+    {
+        question: "O que é overfitting em Machine Learning?",
+        options: [
+            "Quando o modelo se ajusta muito bem aos dados de treinamento, mas generaliza mal",
+            "Quando o modelo não consegue aprender padrões nos dados de treinamento",
+            "Quando há poucos dados para treinar o modelo",
+            "Quando o modelo é muito simples para o problema"
+        ],
+        correct: 0,
+        explanation: "Overfitting ocorre quando o modelo 'decora' os dados de treinamento"
+    },
+    {
+        question: "Qual técnica é usada para reduzir a dimensionalidade dos dados?",
+        options: [
+            "Gradient Descent",
+            "PCA (Principal Component Analysis)",
+            "Backpropagation",
+            "Cross-Validation"
+        ],
+        correct: 1,
+        explanation: "PCA reduz dimensões mantendo a variância máxima possível"
+    },
+    {
+        question: "O que é Gradient Descent?",
+        options: [
+            "Um algoritmo de classificação",
+            "Um método para avaliar modelos",
+            "Um algoritmo de otimização para encontrar mínimos de funções",
+            "Uma técnica de pré-processamento de dados"
+        ],
+        correct: 2,
+        explanation: "Gradient Descent minimiza funções de custo iterativamente"
+    },
+    {
+        question: "Qual métrica NÃO é adequada para avaliar modelos de classificação?",
+        options: [
+            "Precisão (Precision)",
+            "Recall",
+            "F1-Score",
+            "Erro Quadrático Médio (MSE)"
+        ],
+        correct: 3,
+        explanation: "MSE é usado para problemas de regressão, não classificação"
+    },
+    {
+        question: "O que é uma Rede Neural Convolucional (CNN)?",
+        options: [
+            "Um tipo de rede neural para processamento de linguagem natural",
+            "Um tipo de rede neural especializada em processamento de imagens",
+            "Um algoritmo de clustering",
+            "Um método de validação cruzada"
+        ],
+        correct: 1,
+        explanation: "CNNs são especializadas em reconhecimento de padrões visuais"
+    },
+    {
+        question: "Qual é o objetivo do Dropout em redes neurais?",
+        options: [
+            "Acelerar o treinamento",
+            "Aumentar a complexidade do modelo",
+            "Prevenir overfitting",
+            "Melhorar a interpretabilidade"
+        ],
+        correct: 2,
+        explanation: "Dropout desativa aleatoriamente neurônios durante o treinamento"
+    },
+    {
+        question: "O que diferencia aprendizado supervisionado do não-supervisionado?",
+        options: [
+            "A quantidade de dados necessária",
+            "A presença de rótulos nos dados de treinamento",
+            "A velocidade de treinamento",
+            "O tipo de algoritmo usado"
+        ],
+        correct: 1,
+        explanation: "Aprendizado supervisionado usa dados rotulados para treinamento"
+    },
+    {
+        question: "O que é Transfer Learning?",
+        options: [
+            "Transferir dados entre diferentes datasets",
+            "Usar conhecimento de um modelo pré-treinado para um novo problema",
+            "Converter um problema de classificação em regressão",
+            "Transferir parâmetros entre camadas de uma rede neural"
+        ],
+        correct: 1,
+        explanation: "Transfer Learning aproveita modelos pré-treinados para novos problemas"
+    },
+    {
+        question: "Qual é a função da regularização L1 (Lasso)?",
+        options: [
+            "Aumentar a complexidade do modelo",
+            "Reduzir overfitting e promover esparsidade",
+            "Acelerar o treinamento do modelo",
+            "Melhorar a acurácia em todos os casos"
+        ],
+        correct: 1,
+        explanation: "L1 penaliza coeficientes, levando muitos a zero (esparsidade)"
+    },
+    {
+        question: "O que é uma matriz de confusão?",
+        options: [
+            "Uma matriz usada para calcular gradientes em redes neurais",
+            "Uma visualização que mostra erros de classificação por classe",
+            "Uma técnica para reduzir dimensionalidade",
+            "Um método para inicializar pesos em redes neurais"
+        ],
+        correct: 1,
+        explanation: "Mostra verdadeiros/falsos positivos e negativos por classe"
+    },
+    {
+        question: "Qual é o propósito do algoritmo DBSCAN?",
+        options: [
+            "Classificação de texto",
+            "Detecção de anomalias",
+            "Clustering baseado em densidade",
+            "Regressão não-linear"
+        ],
+        correct: 2,
+        explanation: "DBSCAN agrupa pontos baseado na densidade espacial"
+    },
+    {
+        question: "O que é o problema do desaparecimento do gradiente (vanishing gradient)?",
+        options: [
+            "Quando os gradientes se tornam muito pequenos em redes profundas",
+            "Quando o modelo não consegue convergir",
+            "Quando há poucos dados de treinamento",
+            "Quando o modelo é muito simples"
+        ],
+        correct: 0,
+        explanation: "Gradientes muito pequenos impedem o aprendizado em camadas iniciais"
+    },
+    {
+        question: "Qual técnica NÃO é usada para lidar com dados desbalanceados?",
+        options: [
+            "Undersampling",
+            "Oversampling (SMOTE)",
+            "Pesos de classe",
+            "Normalização"
+        ],
+        correct: 3,
+        explanation: "Normalização é para escalar features, não para desbalanceamento"
+    }
+];
+
+// Selecionar 10 perguntas aleatórias para esta sessão
+function shuffleArray(array) {
+    for (let i = array.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [array[i], array[j]] = [array[j], array[i]];
+    }
+    return array;
+}
+
+const questions = shuffleArray([...allQuestions]).slice(0, 10);
+let currentQuestion = 0;
+let score = 0;
+
+function loadQuestion() {
+    const quizDiv = document.getElementById('quiz');
+    quizDiv.innerHTML = `
+        <div class="progress-counter pixel-text">Pergunta ${currentQuestion + 1}/10</div>
+        <div class="question pixel-text">${questions[currentQuestion].question}</div>
+        <div class="options">${questions[currentQuestion].options.map((opt, i) => `
+            <button onclick="checkAnswer(${i})">${opt}</button>
+        `).join('')}</div>
+    `;
+}
+
+function checkAnswer(selected) {
+    const correct = questions[currentQuestion].correct;
+    const explanation = questions[currentQuestion].explanation;
+
+    if(selected === correct) {
+        score++;
+        document.getElementById('quiz').innerHTML += `
+            <div class="correct pixel-text">
+                <p>✓ EXCELENTE!</p>
+                <p>Você acertou! ${explanation}</p>
+                <p>Preparando próxima pergunta...</p>
+            </div>
+        `;
+        setTimeout(() => {
+            currentQuestion++;
+            if(currentQuestion < 10) loadQuestion();
+            else showScore();
+        }, 3000);
+    } else {
+        // Don't reveal the correct answer
+        const encouragement = [
+            "Continue tentando!",
+            "Você consegue!",
+            "Quase lá!",
+            "Pense novamente!",
+            "Revise seus conhecimentos!"
+        ];
+        const randomEncouragement = encouragement[Math.floor(Math.random() * encouragement.length)];
+
+        document.getElementById('quiz').innerHTML += `
+            <div class="wrong pixel-text">
+                <p>✗ INCORRETO</p>
+                <p>${randomEncouragement}</p>
+                <p>Dica: Pense sobre ${explanation.split(' ').slice(0, 3).join(' ')}...</p>
+            </div>
+        `;
+
+        // Remove the feedback after 2 seconds and let the user try again
+        setTimeout(() => {
+            loadQuestion();
+        }, 2000);
+    }
+}
+
+function showScore() {
+    document.getElementById('quiz').style.display = 'none';
+    const scoreDiv = document.getElementById('score');
+    scoreDiv.style.display = 'block';
+    document.getElementById('final-score').textContent = `${score}/10`;
+}
+
+function shareScore() {
+    const text = `Acertei ${score}/10 no Quiz Retro de Machine Learning! 🕹️`;
+    if(navigator.share) {
+        navigator.share({ text });
+    } else {
+        navigator.clipboard.writeText(text);
+        alert("Pontuação copiada para área de transferência!");
+    }
+}
+
+loadQuestion();
+</script>
+</body>
+</html>
